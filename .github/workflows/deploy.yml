@@ -1,0 +1,39 @@
+name: Deployment to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: 'deploying infrastructure and test'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./infra
+      
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./infra
+        env:
+          TF_VAR_username: ${{ secrets.TF_VAR_USERNAME }}
+          TF_VAR_password: ${{ secrets.TF_VAR_PASSWORD }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
